@@ -2,7 +2,7 @@
     Montecarlo On-Policy solution. 
     |Iterations|Score|slippery|
     |10000     |1    |False   |
-    |10000     |0.063|True   |
+    |10000     |0.772|True   |
 '''
 
 import gym
@@ -40,7 +40,7 @@ def run_episode(q, render=False, e_enabled=True):
             break
     return states, rewards, actions, win
 
-def on_policy_improvement(episodes=1000, gamma=0.1, epsilon = 0.3):
+def on_policy_improvement(episodes, gamma, epsilon):
     ## Define e-soft policy
     policy_data = np.array([epsilon/posible_actions for i in range(posible_actions - 1)] + [1 - epsilon + epsilon/posible_actions]) + np.zeros((posible_states, posible_actions))
     Q  = np.random.random((posible_states, posible_actions))
@@ -58,6 +58,7 @@ def on_policy_improvement(episodes=1000, gamma=0.1, epsilon = 0.3):
             G = gamma*G + reward
             key = str(state) + '-' + str(action)
             if (not (key in visited)):
+                visited[key] = True
                 returns[state][action]['sum'] += G
                 returns[state][action]['n'] += 1
                 Q[state, action] = returns[state][action]['sum'] / returns[state][action]['n']
@@ -86,7 +87,7 @@ def print_policy(data):
                 text += '> '
         print(text)
 
-data = on_policy_improvement(10000, gamma=0.1, epsilon=0.1)
+data = on_policy_improvement(10000, gamma=0.9, epsilon=0.1)
 print_policy(data)
 wins = 0
 for i in range(1000):
