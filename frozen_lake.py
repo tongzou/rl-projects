@@ -69,7 +69,7 @@ def get_score(env, policy, episodes=1000):
 
 
 
-env = gym.make('FrozenLake-v0', is_slippery=False)
+env = gym.make('FrozenLake-v0')
 
 stateValues = value_iteration(env, max_iterations=2000)
 policy = get_policy(env, stateValues)
