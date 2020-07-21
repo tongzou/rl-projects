@@ -78,9 +78,9 @@ def run_episode(policy, render = False):
             break
     return states, rewards, actions, win
 
-def on_policy_improvement(episodes = 1000, first_visit = True, gamma = 0.9, epsilon = 0.1):
+def on_policy_mc(episodes = 1000, first_visit = True, gamma = 0.9, epsilon = 0.1):
     ## initialize random policy    
-    Q = np.random.random((env.nS, env.nA))
+    Q = np.zeros((env.nS, env.nA))
     policy = get_policy(Q, True, epsilon)
     returns = [[{ 'sum': 0, 'n': 0 } for j in range(env.nA)] for i in range(env.nS)]
 
@@ -112,7 +112,7 @@ def on_policy_improvement(episodes = 1000, first_visit = True, gamma = 0.9, epsi
     print(returns)
     return Q
 
-def off_policy_improvement(episodes = 1000, gamma = 0.9, epsilon = 0.1):
+def off_policy_mc(episodes = 1000, gamma = 0.9, epsilon = 0.1):
     ## initialize random policy
     bpolicy = get_policy()
     Q = np.zeros((env.nS, env.nA))
@@ -139,7 +139,24 @@ def off_policy_improvement(episodes = 1000, gamma = 0.9, epsilon = 0.1):
             W = W / bpolicy[state][action]
     return Q
 
+def sarsa(episodes = 1000, gamma = 0.9, alpha = 0.5, epsilon = 0.1):
+    Q = np.zeros((env.nS, env.nA))
+    policy = get_policy(Q, True, epsilon) 
 
+    for e in range(episodes):
+        s = env.reset()
+        a = get_action(policy, s)
+        while True:
+            s1, reward, done, _ = env.step(a)
+            a1 = get_action(policy, s1)
+            Q[s][a] += alpha * (reward + gamma * Q[s1][a1] - Q[s][a])
+            policy = get_policy(Q, True, epsilon)
+            s = s1
+            a = a1
+            if done:
+                break
+
+    return Q
 def get_score(env, policy, episodes=1000):
     misses = 0
     steps_list = []
@@ -164,8 +181,9 @@ def get_score(env, policy, episodes=1000):
     print('And you fell in the hole {:.2f} % of the times'.format((misses/episodes) * 100))
     print('----------------------------------------------')
 
-Q = on_policy_improvement(10000, True, 0.99, 0.1)
-# Q = off_policy_improvement(20000, 0.99)
+# Q = on_policy_mc(10000, False, 0.99, 0.1)
+# Q = off_policy_mc(20000, 0.99)
+Q = sarsa(5000, 0.9, 0.01)
 print(Q)
 policy = get_policy(Q, False)
 print_policy(policy)
