@@ -1,35 +1,35 @@
 '''
     Montecarlo Off-Policy solution. 
-    |Iterations|Score|slippery|
-    |10000     |1    |False   |
-    |10000     |0.519|True   |
 
-NOT slippery
 Gamma   Error
-0.01     100.0 %
-0.1      100.0 %
-0.5      100.0 %
-0.9      0.0 %
-
-Slippery
+0.01     60.0 %
+0.1      59.00000000000001 %
+0.25     59.599999999999994 %
+0.5      61.4 %
+0.75     61.7 %
+0.9      58.099999999999994 %
+0.99     60.9 %
 '''
 
 import gym
 import numpy as np
 
-env = gym.make('FrozenLake-v0', is_slippery=True)
-posible_states = env.nS
-posible_actions = env.nA
+env = gym.make('Blackjack-v0')
+posible_states = 704
+posible_actions = 2
 
 
 def policy(q, s):
     if not isinstance(q[s], np.float64):
         return np.argmax(q[s])
-    return q[s]
+    return int(q[s])
+
+def parse_state(s):
+    return (1+ s[0]) * (1+ s[1]) + (1 if s[2] else 2)
 
 
 def run_episode(q, render=False):
-    state = env.reset()
+    state = parse_state(env.reset())
     states = []
     rewards = []
     actions = []
@@ -40,6 +40,7 @@ def run_episode(q, render=False):
         states.append(state)
         actions.append(action)
         state, reward, done, _ = env.step(action)
+        state = parse_state(state)
         if render:
             env.render()
         rewards.append(reward)
@@ -104,10 +105,8 @@ def print_policy(data):
 
 print('Gamma\tError')
 
-for gamma in [0.01, 0.1, 0.25, 0.5, 0.75, 0.9]:
+for gamma in [0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99]:
     data = off_policy_improvement(100000, gamma)
     # Error < 0.4 [0. 3. 0. 0. 0. 0. 2. 0. 3. 1. 0. 0. 0. 2. 2. 0.]
     win = test_policy(data)
-    if win >0.4:
-        print(data)
     print(gamma,'\t', (1 - win)*100, '%')

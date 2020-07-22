@@ -1,53 +1,43 @@
 '''
     Montecarlo On-Policy solution. 
-    |Iterations|Score|slippery|
-    |10000     |0.772|True   |
 
-NOT SLippery (Easy) (5000 episodes)
-Gamma   Epsilon Error
-0.01     0.01    100.0 %
-0.01     0.1     0.0 %
-0.01     0.5     0.0 %
-0.01     0.9     0.0 %
-0.1      0.01    100.0 %
-0.1      0.1     0.0 %
-0.1      0.5     0.0 %
-0.1      0.9     0.0 %
-0.5      0.01    100.0 %
-0.5      0.1     0.0 %
-0.5      0.5     0.0 %
-0.5      0.9     0.0 %
-0.9      0.01    100.0 %
-0.9      0.1     100.0 %
-0.9      0.5     0.0 %
-0.9      0.9     0.0 %
-
-
-Slippery
-Gamma   Epsilon Error
-0.01     0.5     60.0 %
-0.1      0.01    40.0 %
-0.1      0.1     90.0 %
-0.1      0.25    90.0 %
-0.1      0.6     70.0 %
-0.1      0.9     80.0 %
-0.5      0.01    80.0 %
-0.5      0.1     19.999999999999996 %
-0.5      0.25    40.0 %
-0.5      0.5     30.000000000000004 %
-0.5      0.75    80.0 %
-0.5      0.6     90.0 %
-0.5      0.9     70.0 %
-0.9      0.5     70.0 %
-0.9      0.9     40.0 %
+Gamma   Epsilon  Error
+0.01     0.01    65.0 %
+0.02     0.01    59.00000000000001 %
+0.4      0.01    65.0 %
+0.5      0.01    61.0 %
+0.6      0.01    62.0 %
+0.9      0.01    56.00000000000001 %
+0.95     0.01    70.0 %
+0.01     0.1     62.0 %
+0.02     0.1     62.0 %
+0.4      0.1     64.0 %
+0.5      0.1     51.0 %
+0.6      0.1     68.0 %
+0.9      0.1     61.0 %
+0.95     0.1     60.0 %
+0.01     0.5     59.00000000000001 %
+0.02     0.5     59.00000000000001 %
+0.4      0.5     65.99999999999999 %
+0.5      0.5     58.00000000000001 %
+0.6      0.5     62.0 %
+0.9      0.5     61.0 %
+0.95     0.5     65.99999999999999 %
+0.01     0.9     60.0 %
+0.02     0.9     59.00000000000001 %
+0.4      0.9     62.0 %
+0.5      0.9     60.0 %
+0.6      0.9     58.00000000000001 %
+0.9      0.9     61.0 %
+0.95     0.9     68.0 %
 '''
 
 import gym
 import numpy as np
 
-env = gym.make('FrozenLake-v0', is_slippery=True)
-posible_states = env.nS
-posible_actions = env.nA
+env = gym.make('Blackjack-v0')
+posible_states = 704
+posible_actions = 2
 
 
 def policy(q, s, e_enabled):
@@ -55,8 +45,11 @@ def policy(q, s, e_enabled):
         return np.random.choice(range(posible_actions), p=q[s])
     return np.argmax(q[s])
 
+def parse_state(s):
+    return (1+ s[0]) * (1+ s[1]) + (1 if s[2] else 2)
+
 def run_episode(q, render=False, e_enabled=True):
-    state = env.reset()
+    state = parse_state(env.reset())
     states = []
     rewards = []
     actions = []
@@ -67,6 +60,7 @@ def run_episode(q, render=False, e_enabled=True):
         states.append(state)
         actions.append(action)
         state, reward, done, _ = env.step(action)
+        state = parse_state(state)
         if render:
             env.render()
         rewards.append(reward)
@@ -109,32 +103,14 @@ def on_policy_improvement(episodes, gamma, epsilon):
                 break
     return policy_data
 
-def print_policy(data):
-    for s in range(0, 16, 4):
-        text = ''
-        for t in range(s, s+4):
-            v = np.argmax(data[t]) 
-            if v == 2:
-                text += '> '
-            if v == 0:
-                text += '< '
-            if v == 1:
-                text += 'v '
-            if v == 3:
-                text += '> '
-        print(text)
-
 print('Gamma\tEpsilon\tError')
 
-for gamma in [0.01, 0.1, 0.5, 0.9]:
-    for epsilon in [0.01, 0.1, 0.5, 0.9]:
+for epsilon in [0.5]:
+    for gamma in [0.4]:
         data = on_policy_improvement(5000, gamma, epsilon)
-        # Error < 0.3,  data = [[0.925 0.025 0.025 0.025], [0.925 0.025 0.025 0.025], [0.925 0.025 0.025 0.025], [0.925 0.025 0.025 0.025], [0.925 0.025 0.025 0.025], [0.025 0.025 0.025 0.925], [0.025 0.025 0.925 0.025], [0.025 0.025 0.025 0.925], [0.025 0.025 0.025 0.925], [0.025 0.925 0.025 0.025], [0.925 0.025 0.025 0.025], [0.025 0.025 0.025 0.925], [0.025 0.025 0.025 0.925], [0.025 0.025 0.925 0.025], [0.025 0.925 0.025 0.025],[0.025 0.025 0.025 0.925]]
         wins = 0
         for i in range(100):
             _, _, _, win = run_episode(data, False, False)
             if win:
                 wins +=1
-        if wins/100 > 0.5:
-            print(data)
         print(gamma,'\t',epsilon,'\t', (1 - wins/100)*100, '%')
