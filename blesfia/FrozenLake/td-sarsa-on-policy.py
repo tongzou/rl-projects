@@ -3,6 +3,7 @@
 
 slippery 99900: 62% win rate
 no Slipp 400  : 100% win rate
+slippery minus reward if fail: >80%
 '''
 
 import gym
@@ -50,6 +51,8 @@ def sarsa_improvement(episodes, epsilon=0.1, step_size=0.01, gamma=0.9):
         A = policy(policy_data, S, True)
         while True:
             S2, R, done, _ = env.step(A)
+            if R != 1 and done:
+                R = -1
             A2 = policy(policy_data, S2, True)
             Q[S, A] += step_size*(R + (gamma*Q[S2, A2]) - Q[S,A])
 
