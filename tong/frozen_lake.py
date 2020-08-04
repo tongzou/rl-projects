@@ -17,12 +17,14 @@ def get_policy(Q = None, epsilon_soft = True, epsilon = 0.1):
     if (epsilon_soft):
         policy = [[1/env.nA for j in range(env.nA)] for i in range(env.nS)]
         for state in range(env.nS):
-            best_action = np.argmax(Q[state])
+            q = np.array(Q[state])
+            max = q.max()
+            max_index = np.where(q == max)[0]
             for action in range(env.nA):
-                if action == best_action:
-                    policy[state][action] = 1 - epsilon + epsilon/env.nA
+                if Q[state][action] == max:
+                    policy[state][action] = (1 - (env.nA - len(max_index)) * epsilon / env.nA) / len(max_index)
                 else:
-                    policy[state][action] = epsilon/env.nA
+                    policy[state][action] = epsilon / env.nA
     else:
         policy = [0 for i in range(env.nS)]
         for state in range(env.nS):
@@ -38,14 +40,14 @@ def print_policy(policy):
         text = ''
         for t in range(s, s+4):
             v = np.argmax(policy[t]) 
-            if v == 2:
-                text += '> '
             if v == 0:
                 text += '< '
             if v == 1:
                 text += 'v '
-            if v == 3:
+            if v == 2:
                 text += '> '
+            if v == 3:
+                text += '^ '
         print(text)
 
 def argmax_rand(arr):
@@ -149,7 +151,7 @@ def sarsa(episodes = 1000, gamma = 0.9, alpha = 0.5, epsilon = 0.1):
         while True:
             s1, reward, done, _ = env.step(a)
             a1 = get_action(policy, s1)
-            Q[s][a] += alpha * (reward + gamma * Q[s1][a1] - Q[s][a])
+            Q[s, a] += alpha * (reward + gamma * Q[s1, a1] - Q[s, a])
             policy = get_policy(Q, True, epsilon)
             s = s1
             a = a1
@@ -181,10 +183,29 @@ def get_score(env, policy, episodes=1000):
     print('And you fell in the hole {:.2f} % of the times'.format((misses/episodes) * 100))
     print('----------------------------------------------')
 
-# Q = on_policy_mc(10000, False, 0.99, 0.1)
-# Q = off_policy_mc(20000, 0.99)
-Q = sarsa(5000, 0.9, 0.01)
-print(Q)
+# Q = [[0.21846514, 0.16575233, 0.17920824, 0.17705052],
+#  [0.02604731, 0.11690598, 0.13139836, 0.24998069],
+#  [0.16520562, 0.09750461, 0.13053307, 0.13930334],
+#  [0.05295458, 0.,         0.,         0.03971814],
+#  [0.24864963, 0.17527817, 0.18068609, 0.15034662],
+#  [0.,         0.,         0.,         0.        ],
+#  [0.20364423, 0.05016756, 0.12723714, 0.03498036],
+#  [0.,         0.,         0.,         0.        ],
+#  [0.07471529, 0.13834721, 0.20210587, 0.33199799],
+#  [0.23140845, 0.4103624,  0.2591089,  0.20827348],
+#  [0.43460851, 0.4007506,  0.31424689, 0.19186467],
+#  [0.,         0.,         0.,         0.        ],
+#  [0.,         0.,         0.,         0.        ],
+#  [0.28130868, 0.32189845, 0.57822347, 0.34599312],
+#  [0.58148733, 0.73774446, 0.68957987, 0.60947586],
+#  [0.,         0.,         0.,         0.        ]]
+
+# Q = on_policy_mc(10000, False, 0.95, 0.1)
+# Q = off_policy_mc(10000, 0.95)
+Q = sarsa(100000, 0.9, 0.01)
+# print(Q)
 policy = get_policy(Q, False)
+# policy = get_policy(Q, True, 0.1)
+# print(policy)
 print_policy(policy)
 get_score(env, policy)
