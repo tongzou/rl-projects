@@ -1,8 +1,8 @@
 '''
-    Sarsa On-Policy solution. 
+    Q Learning Off-Policy solution. 
 
-slippery 99900: 62% win rate
-no Slipp 400  : 100% win rate
+slippery 99900: 70% win rate
+no Slipp 200  : 100% win rate
 slippery minus reward if fail: >80%
 '''
 
@@ -41,20 +41,19 @@ def run_episode(q, render=False, e_enabled=True):
             break
     return states, rewards, actions, win
 
-def sarsa_improvement(episodes, epsilon=0.1, step_size=0.01, gamma=0.9):
+def q_learning(episodes, epsilon=0.1, step_size=0.01, gamma=0.9):
     ## Define e-soft policy
     policy_data = [np.array([1/posible_actions for i in range(posible_actions)]) for i in range(posible_states)]
     Q  = np.zeros((posible_states, posible_actions))
     
     for e in range(episodes):
         S = env.reset()
-        A = policy(policy_data, S, True)
         while True:
+            A = policy(policy_data, S, True)
             S2, R, done, _ = env.step(A)
             if R != 1 and done:
-                R = -1
-            A2 = policy(policy_data, S2, True)
-            Q[S, A] += step_size*(R + (gamma*Q[S2, A2]) - Q[S,A])
+               R = -1
+            Q[S, A] += step_size*(R + (gamma*np.max(Q[S2]) - Q[S,A]))
 
             # Generate E-policy
             if np.max(Q[S]) != 0:
@@ -64,7 +63,6 @@ def sarsa_improvement(episodes, epsilon=0.1, step_size=0.01, gamma=0.9):
 
             # Update env
             S = S2
-            A = A2
 
             if done:
                 break
@@ -79,4 +77,4 @@ def sarsa_improvement(episodes, epsilon=0.1, step_size=0.01, gamma=0.9):
             print('With', e, 'episodes: ', (wins/attempts*100) if wins > 0 else 0)
     return policy_data, Q
 
-policy_data, q = sarsa_improvement(100000)
+policy_data, q = q_learning(100000)
