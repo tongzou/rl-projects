@@ -13,7 +13,7 @@ def blackjack_state_mapper(s):
 
 def blackjack():
   rl = RL('Blackjack-v0', 704, 2, blackjack_state_mapper)
-  Q = rl.sarsa(100000, 0.9, 0.02)
+  Q = rl.on_policy_mc(30000, True, 1, 0.01)
   policy = rl.get_policy(Q, False)
   wins = 0
   for i in range(1000):
