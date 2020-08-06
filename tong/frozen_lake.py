@@ -202,7 +202,7 @@ def get_score(env, policy, episodes=1000):
 
 # Q = on_policy_mc(10000, False, 0.95, 0.1)
 # Q = off_policy_mc(10000, 0.95)
-Q = sarsa(100000, 0.9, 0.01)
+Q = sarsa(10000, 0.9, 0.02)
 # print(Q)
 policy = get_policy(Q, False)
 # policy = get_policy(Q, True, 0.1)
