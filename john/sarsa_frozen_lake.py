@@ -1,12 +1,15 @@
 import gym
 import numpy as np
 
-env = gym.make('FrozenLake-v0') 
+env = gym.make('FrozenLake-v0', is_slippery=False) 
 
 def sarsa(episodes = 10000, gamma = 0.95, alpha = 0.5, epsilon = 0.1):
 
     #Initializing the Q-matrix 
     Q = np.zeros((env.observation_space.n, env.action_space.n)) 
+
+    def argmax_rand(arr):
+        return np.random.choice(np.flatnonzero(arr == np.max(arr)))
 
     #Function to choose the next action 
     def choose_action(state): 
@@ -14,7 +17,7 @@ def sarsa(episodes = 10000, gamma = 0.95, alpha = 0.5, epsilon = 0.1):
         if np.random.uniform(0, 1) < epsilon: 
             action = env.action_space.sample() 
         else: 
-            action = np.argmax(Q[state, :]) 
+            action = argmax_rand(Q[state, :]) 
         return action 
     
     #Function to learn the Q-value 
@@ -29,7 +32,6 @@ def sarsa(episodes = 10000, gamma = 0.95, alpha = 0.5, epsilon = 0.1):
     
     # Starting the SARSA learning 
     for episode in range(episodes): 
-        t = 0
         state1 = env.reset() 
         action1 = choose_action(state1) 
     
@@ -47,9 +49,7 @@ def sarsa(episodes = 10000, gamma = 0.95, alpha = 0.5, epsilon = 0.1):
     
             state1 = state2 
             action1 = action2 
-            
-            #Updating the respective vaLues 
-            t += 1     
+
             
             #If at the end of learning process 
             if done and reward == 1:
@@ -64,7 +64,7 @@ def sarsa(episodes = 10000, gamma = 0.95, alpha = 0.5, epsilon = 0.1):
     return Q, goal, misses
 
 
-episodes = 100000
+episodes = 10000
 Q, reward, misses = sarsa(episodes)
 
 #performance 
