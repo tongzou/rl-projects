@@ -10,7 +10,7 @@ env = TicTacToeEnv()
 policy1 = 0
 with open('model.npy', 'rb') as f:
     policy1 = np.load(f)
-
+print(policy1[0])
 def mark_to_number(mark):
     if mark == 'O':
         return '1'
@@ -23,8 +23,7 @@ def parse_state (board, mark):
     trinary=''
     for s in board:
         trinary += mark_to_number(s)
-    trinary += mark_to_number(mark)
-    return trinaryToDecimal(int(trinary))
+    return trinaryToDecimal(int(trinary)) * int(mark_to_number(mark))
 
 def trinaryToDecimal(trinary): 
     decimal = 0
@@ -39,7 +38,7 @@ def trinaryToDecimal(trinary):
 
 
 def run_episode(q, render=False, e_enabled=True):
-    turn = 'ia' # 'human' if np.random.random() < 0.5 else 'ia'
+    turn = 'human' if np.random.random() < 0.5 else 'ia'
     print(turn, 'starts!')
     board, mark = env.reset()
     state = parse_state(board, mark)
@@ -55,7 +54,7 @@ def run_episode(q, render=False, e_enabled=True):
         
         if turn == 'ia':
             action = np.argmax(q[state])
-            print('IA:', action)
+            print('IA:', state, q[state], action)
         else:
             action = int(input('Choose your action [0-9): '))
             print('Human:', action)

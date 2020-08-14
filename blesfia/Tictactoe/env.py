@@ -77,9 +77,10 @@ class TicTacToeEnv(gym.Env):
     def step(self, action):
         assert self.action_space.contains(action)
 
-        # Can not play
+        # Invalid movement
         if not self.play(action):
-            return self.return_step(0)
+            self.done = True
+            return self.return_step(-1)
         
         status = check_game_status(self.board)
         # Still playing
@@ -89,7 +90,7 @@ class TicTacToeEnv(gym.Env):
         self.done = True
         # Draw
         if status == 0:
-            return self.return_step(-1)
+            return self.return_step(0)
         # Winner
         return self.return_step(1)
 
