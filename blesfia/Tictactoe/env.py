@@ -128,3 +128,28 @@ class TicTacToeEnv(gym.Env):
             if self.board[i] == 0:
                 available_options.append(i)
         return np.random.choice(available_options)
+    
+    def mark_to_number(self, mark):
+        if mark == 'O':
+            return '1'
+        if mark == 'X':
+            return '2'
+        return '0'
+
+    def trinaryToDecimal(self, trinary): 
+        decimal = 0
+        i = 0
+        n = 0
+        while(trinary != 0): 
+            dec = trinary % 10
+            decimal = decimal + dec * pow(3, i) 
+            trinary = trinary//10
+            i += 1
+        return decimal
+
+    def parse_state (self, board, mark):
+        # Convert to trinary
+        trinary=''
+        for s in board:
+            trinary += self.mark_to_number(s)
+        return self.trinaryToDecimal(int(trinary)) * int(self.mark_to_number(mark))
