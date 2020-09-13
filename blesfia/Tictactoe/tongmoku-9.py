@@ -3,7 +3,7 @@ import gym_gomoku
 import os
 from algorithms import q_improvement, get_action
 import numpy as np
-env = gym.make('TicTacToe-v0')
+env = gym.make('Gomoku9x9_5-v0')
 
 class Env:
 
@@ -19,10 +19,10 @@ class Env:
         return decimal
 
     def parse_state(self, S):
-        fp = S[0].reshape((1, 9))[0]
-        sp = S[1].reshape((1, 9))[0]
+        fp = S[0].reshape((1, 81))[0]
+        sp = S[1].reshape((1, 81))[0]
         trinary=''
-        for i in range(0, 9):
+        for i in range(0, 81):
             if (fp[i] == 1):
                 trinary += '1'
             elif (sp[i] == 1):
@@ -36,17 +36,22 @@ class Env:
         env.render()
  
     def reset(self):
-        env.player_color = np.random.choice([0, 1])
+        env.player_color = 0
         self.player_color = env.player_color
-        env.opponent = 'random'
+        env.opponent = 'naive3'# random naive3
         return self.parse_state(env.reset())
     
     def step(self, A):
         observation, reward, done, _ = env.step(A)
+        if done:
+            if reward == 0:
+                reward = -1
         return self.parse_state(observation), reward, done, 0
 
 tongTacToe = Env()
-policy_data, q = q_improvement(50000, tongTacToe, 9, (3**9)*2, name='tong-tac-toe')
+print('Start')
+policy_data, q = q_improvement(100000, tongTacToe, 81, (3**81), name='tongmoku-9')
+print('Trained')
 
 def run_episode(q, render=False):
     state = tongTacToe.reset()
@@ -64,12 +69,11 @@ def run_episode(q, render=False):
             break
     return win
 
-
-attempts = 1000
+print('Playing')
+attempts = 10
 wins = 0
 for i in range(attempts):
     win = run_episode(q, i == 0)
     if win:
         wins +=1
-
 print('episodes: ', (wins/attempts*100) if wins > 0 else 0)
