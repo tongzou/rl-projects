@@ -70,7 +70,7 @@ def q_improvement(episodes, env, posible_actions, posible_states, epsilon=0.1, s
                 break
             S = S2
         
-        if e % (episodes / 10) == 0:
+        if e % (episodes / 10) == 0 or e % 1000 == 0:
             print('Training... (' + str(e / episodes *100) + ')')
             with open(name +'_q.model', 'wb') as f:
                 pickle.dump(Q, f)
